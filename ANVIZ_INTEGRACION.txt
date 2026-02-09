@@ -1,0 +1,136 @@
+================================================================================
+                    INTEGRACION ANVIZ FACEDEEP 3
+================================================================================
+
+ESTADO ACTUAL
+-------------
+- Backend Spring Boot: LISTO
+- Endpoint para fichajes: LISTO
+- Frontend Angular: LISTO
+- Integracion SDK Anviz: PENDIENTE (requiere Windows)
+
+
+================================================================================
+ENDPOINT EXISTENTE PARA RECIBIR FICHAJES
+================================================================================
+
+POST /api/asistencias/marcar-presente
+
+Body (JSON):
+{
+  "empleadoId": 1,
+  "horaLlegada": "22:00:00",
+  "horaEsperada": "22:00:00",    // opcional, default 22:00
+  "observaciones": "..."         // opcional
+}
+
+Permisos requeridos: ADMIN, RRHH o SUPERVISOR
+Respuesta: AsistenciaDTO con status 201 Created
+
+
+================================================================================
+SDK ANVIZ - INFORMACION TECNICA
+================================================================================
+
+Ubicacion del SDK: /44/common/
+Libreria principal: tc-b_new_sdk.dll (32 y 64 bit)
+Demo incluido: C# (.NET) en /44/sdk_demo_2015C#/
+
+Funciones principales del SDK:
+- CChex_Init()                    -> Inicializar SDK
+- CChex_Start()                   -> Arrancar servicio
+- CCHex_ClientConnect(handle, IP, Port) -> Conectar al dispositivo
+- CChex_Update()                  -> Recibir eventos (fichajes en vivo)
+- CChex_DownloadAllRecords()      -> Descargar registros
+- CChex_UploadEmployeeInfo()      -> Subir empleados al dispositivo
+
+
+================================================================================
+ARQUITECTURA PROPUESTA
+================================================================================
+
+                         RED LOCAL (LAN)
+                              |
+       +----------------------+----------------------+
+       |                      |                      |
+       v                      v                      v
+   [PC 1]               [PC 2]                 [Celular]
+   Browser              Browser                 Browser
+       |                      |                      |
+       +----------------------+----------------------+
+                              |
+                              v
+                    +-------------------+
+                    |  SERVIDOR PC      |
+                    |  (Windows)        |
+                    |                   |
+                    | - Spring Boot     |
+                    | - PostgreSQL      |
+                    | - SDK Anviz       |
+                    +--------+----------+
+                             | Ethernet
+                             v
+                    +-------------------+
+                    |  FaceDeep 3       |
+                    +-------------------+
+
+
+================================================================================
+LO QUE FALTA HACER (EN WINDOWS)
+================================================================================
+
+Crear un servicio/aplicacion que:
+
+1. Se conecte a la FaceDeep 3 usando el SDK (por IP)
+2. Escuche eventos de fichaje en tiempo real (CCHEX_RET_LIVE_SEND_ATTENDANCE_TYPE)
+3. Cuando alguien fiche, haga POST a:
+
+   http://localhost:8080/api/asistencias/marcar-presente
+
+   Con el body:
+   {
+     "empleadoId": <ID del empleado>,
+     "horaLlegada": "<hora:minuto:segundo>"
+   }
+
+OPCIONES DE IMPLEMENTACION:
+
+A) JNA desde Java (todo en Spring Boot)
+   - Usar Java Native Access para llamar la DLL directamente
+   - Todo en un solo proyecto
+   - Solo funciona en Windows
+
+B) Microservicio .NET separado
+   - Usar el demo C# que viene con el SDK
+   - Exponerlo como servicio que llama a la API Spring Boot
+   - Mas facil de implementar (el codigo C# ya existe)
+
+
+================================================================================
+RECURSOS
+================================================================================
+
+- SDK descargado en: /Users/facundocortez/Documents/lalal/44/
+- Documentacion: /44/New SDK API 2019.docx
+- Demo C#: /44/common/sdk_demo_2015C#/AnvizDemo/
+- Header C: /44/common/32/crosschex.h (referencia de todas las funciones)
+
+CrossChex Cloud (alternativa con internet):
+- API Postman: https://documenter.getpostman.com/view/9525654/2s93ebSW34
+- Guia webhooks: https://community.anviz.com/t/how-to-synchronize-the-time-attendance-data-to-the-third-party-systems/491
+
+
+================================================================================
+MAPEO EMPLEADOS
+================================================================================
+
+IMPORTANTE: Los empleados en la FaceDeep 3 deben tener un ID que coincida
+con el empleadoId de la base de datos del sistema.
+
+Opciones:
+1. Usar el mismo ID numerico en ambos sistemas
+2. Crear un campo en la tabla empleados para guardar el ID del dispositivo
+3. Usar el DNI como identificador comun
+
+
+================================================================================

@@ -1,0 +1,41 @@
+El endpoint para registrar la entrada de un empleado es:
+
+  POST /api/asistencias/marcar-presente
+
+  Body (JSON):
+  {
+    "empleadoId": 1,
+    "horaLlegada": "22:00:00",
+    "horaEsperada": "22:00:00",  // opcional, default 22:00
+    "observaciones": "..."       // opcional
+  }
+
+  Permisos: Requiere rol ADMIN, RRHH o SUPERVISOR
+
+  Respuesta: Devuelve un AsistenciaDTO con status 201 Created
+
+  ---
+  Otros endpoints de asistencias disponibles:
+  Método: GET
+  Endpoint: /api/asistencias/hoy
+  Descripción: Asistencias del día
+  ────────────────────────────────────────
+  Método: GET
+  Endpoint: /api/asistencias/fecha/{fecha}
+  Descripción: Asistencias por fecha
+  ────────────────────────────────────────
+  Método: GET
+  Endpoint: /api/asistencias/empleado/{id}/hoy
+  Descripción: Asistencia de un empleado hoy
+  ────────────────────────────────────────
+  Método: GET
+  Endpoint: /api/asistencias/empleado/{id}/historial
+  Descripción: Historial de un empleado
+  ────────────────────────────────────────
+  Método: PUT
+  Endpoint: /api/asistencias/{id}
+  Descripción: Actualizar asistencia
+  ────────────────────────────────────────
+  Método: DELETE
+  Endpoint: /api/asistencias/{id}
+  Descripción: Eliminar asistencia (solo ADMIN)
