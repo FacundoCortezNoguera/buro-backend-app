@@ -10,33 +10,37 @@ The web client lives in
 ## What it does
  
 **Door access control.** The system integrates with an **Anviz biometric
-fingerprint reader** installed at the entrance, so staff and guests are
-identified by fingerprint instead of a printed list or a manual check.
+fingerprint reader** installed at the entrance, so people are identified by
+fingerprint instead of a printed list or a manual check at the door.
  
-<!-- TODO: una o dos frases sobre cómo funciona. ¿El backend le carga las huellas
-     al lector, o solo lee los eventos que el lector genera? ¿Registra cada
-     ingreso con hora? -->
+**Payments.** Charges are recorded against the venue's operation, and the
+application generates the corresponding documents as PDFs.
  
-**Payments.**
- 
-<!-- TODO: qué maneja exactamente. ¿Cobro de entradas? ¿Consumiciones?
-     ¿Cuentas por mesa? ¿Cierre de caja? Una o dos frases. -->
- 
-<!-- TODO: si hay otros módulos (usuarios y permisos, reportes, listas de
-     invitados), agregalos acá. -->
+**Users and permissions.** Authentication is token-based (JWT) with role-based
+access, so what each staff member can see and do is controlled by their role.
  
 ## Architecture
  
-Angular web client → REST API → relational database, with the Anviz reader
-<!-- TODO: cómo se comunica el backend con el lector: ¿por red con su SDK?
-     ¿leyendo la base de datos del dispositivo? ¿un archivo que exporta? -->
+```
+Angular client  →  REST API (Spring Boot)  →  PostgreSQL
+                          ↑
+                   Anviz fingerprint
+                    reader at the door
+```
+ 
+Schema changes are versioned with Flyway, so the database can be rebuilt from
+scratch at any commit rather than depending on a hand-maintained dump.
  
 ## Stack
  
-- Java <!-- TODO: versión --> with <!-- TODO: ¿Spring Boot? ¿qué versión? -->
-- <!-- TODO: base de datos -->
-- Maven
-- Docker and Docker Compose
+- **Java 21**, Spring Boot 4
+- **Spring Data JPA** for persistence, **Flyway** for schema migrations
+- **Spring Security** with JWT (jjwt) for authentication and roles
+- **PostgreSQL**
+- **OpenPDF** for document generation
+- Maven, Docker and Docker Compose
+Tests cover the persistence, security and web layers.
+ 
 ## Running it locally
  
 ```bash
